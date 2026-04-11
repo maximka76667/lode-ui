@@ -1,11 +1,21 @@
 <script lang="ts">
 	import { connectSSE, fetchReadings, type SensorReading } from '$lib/api';
+	import { fromISO, fmtVal, fmtLabel } from '$lib/utils';
 	import MetricChart from '$lib/components/MetricChart.svelte';
 
 	// Live state
 	let latest = $state<SensorReading | null>(null);
 	let connected = $state(false);
 	let lastUpdate = $state('');
+	let lastReadingAt = $state(0);
+	let now = $state(Date.now());
+
+	$effect(() => {
+		const id = setInterval(() => (now = Date.now()), 2000);
+		return () => clearInterval(id);
+	});
+
+	let stale = $derived(connected && lastReadingAt > 0 && now - lastReadingAt > 5000);
 
 	// History state
 	let range = $state<'24h' | '7d'>('24h');
@@ -19,6 +29,7 @@
 			(r) => {
 				latest = r;
 				connected = true;
+				lastReadingAt = Date.now();
 				lastUpdate = new Date().toLocaleTimeString();
 			},
 			() => {
@@ -27,61 +38,31 @@
 		);
 	});
 
-	// Reload history whenever range changes
-	$effect(() => {
-		const r = range;
-		let cancelled = false;
-
+	async function loadHistory(r: string) {
 		loading = true;
 		histError = null;
+		try {
+			const data = await fetchReadings({ from: fromISO(r), limit: 1000 });
+			history = data.toReversed();
+		} catch (e) {
+			histError = e instanceof Error ? e.message : String(e);
+		} finally {
+			loading = false;
+		}
+	}
 
-		fetchReadings({ from: fromISO(r), limit: 1000 })
-			.then((data) => {
-				if (!cancelled) {
-					history = data.toReversed();
-					loading = false;
-				}
-			})
-			.catch((e) => {
-				if (!cancelled) {
-					histError = e instanceof Error ? e.message : String(e);
-					loading = false;
-				}
-			});
-
-		return () => {
-			cancelled = true;
-		};
+	// Reload when range changes
+	$effect(() => {
+		void loadHistory(range);
 	});
 
-	function fromISO(r: string): string {
-		const hours: Record<string, number> = { '24h': 24, '7d': 168 };
-		return new Date(Date.now() - (hours[r] ?? 1) * 3_600_000).toISOString();
-	}
+	// Auto-refresh every 5s
+	$effect(() => {
+		const id = setInterval(() => void loadHistory(range), 5_000);
+		return () => clearInterval(id);
+	});
 
-	function fmtVal(r: SensorReading | null, key: keyof SensorReading, dec = 1): string {
-		if (!r) return '—';
-		const v = r[key];
-		return typeof v === 'number' ? v.toFixed(dec) : '—';
-	}
-
-	function fmtLabel(t: string): string {
-		const d = new Date(t);
-		if (range === '7d') {
-			return (
-				d.toLocaleDateString([], { month: 'short', day: 'numeric' }) +
-				' ' +
-				d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-			);
-		}
-		return d.toLocaleTimeString([], {
-			hour: '2-digit',
-			minute: '2-digit',
-			second: undefined
-		});
-	}
-
-	let chartLabels = $derived(history.map((r) => fmtLabel(r.recorded_at)));
+	let chartLabels = $derived(history.map((r) => fmtLabel(r.recorded_at, range)));
 	let tempValues = $derived(history.map((r) => r.temperature_c));
 	let humidValues = $derived(history.map((r) => r.humidity_pct));
 	let pressValues = $derived(history.map((r) => r.pressure_hpa));
@@ -94,9 +75,15 @@
 <main>
 	<header>
 		<h1>Lode</h1>
-		<span class="status" class:connected>
-			{connected ? '● Live' : '○ Offline'}
-			{#if lastUpdate && connected}&nbsp;· {lastUpdate}{/if}
+		<span class="status" class:connected class:stale>
+			{#if stale}
+				◌ No signal
+			{:else if connected}
+				● Live
+			{:else}
+				○ Offline
+			{/if}
+			{#if lastUpdate}&nbsp;· {lastUpdate}{/if}
 		</span>
 	</header>
 
@@ -183,6 +170,10 @@
 
 	.status.connected {
 		color: #22c55e;
+	}
+
+	.status.stale {
+		color: #f59e0b;
 	}
 
 	/* Cards */

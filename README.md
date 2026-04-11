@@ -1,42 +1,35 @@
-# sv
+# lode-ui
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Dashboard for the Lode environmental sensor system. Displays live temperature, humidity, and pressure readings from a BME280 sensor running on an STM32H723 over Ethernet, via the [lode-api-rust](../lode-api-rust) backend.
 
-## Creating a project
+## Stack
 
-If you're seeing this, you've probably already done this step. Congrats!
+- [SvelteKit](https://kit.svelte.dev/) + Svelte 5 (runes)
+- [Chart.js](https://www.chartjs.org/) for history charts
+- SSE for live data, polling every 5s for history
 
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
+## Setup
 
 ```sh
-# recreate this project
-bun x sv@0.15.1 create --template minimal --types ts --install bun lode-ui
+cp .env.example .env
+# edit VITE_API_URL to point at your lode-api-rust instance
+bun install
+bun dev
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+`.env`:
+```
+VITE_API_URL=http://192.168.1.136:3111
 ```
 
-## Building
+## Features
 
-To create a production version of your app:
+- **Live cards** — temperature, humidity, pressure updated in real time via SSE. Reconnects automatically every 3s on drop.
+- **Connection status** — `● Live` / `◌ No signal` (board quiet, API keep-alive still open) / `○ Offline` (API unreachable)
+- **History charts** — 24h or 7d line charts, refreshed every 5s
+- **Dark theme**
 
-```sh
-npm run build
-```
+## Related
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- [`lode-api-rust`](../lode-api-rust) — Axum/SQLite REST API + SSE broadcaster
+- [`lode-stm32h723`](../lode-stm32h723) — Embassy firmware for Nucleo-H723ZG, posts readings every 500ms
