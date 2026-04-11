@@ -1,6 +1,6 @@
 # lode-ui
 
-Dashboard for the Lode environmental sensor system. Displays live temperature, humidity, and pressure readings from a BME280 sensor running on an STM32H723 over Ethernet, via the [lode-api-rust](../lode-api-rust) backend.
+Dashboard for the Lode environmental sensor system. Displays live temperature, humidity, and pressure readings from a BME280 sensor running on an STM32H723 over Ethernet, via the [lode-api-rust](https://github.com/maximka76667/lode-api-rust) backend.
 
 ## Stack
 
@@ -18,6 +18,7 @@ bun dev
 ```
 
 `.env`:
+
 ```
 VITE_API_URL=http://192.168.1.136:3111
 ```
@@ -31,5 +32,5 @@ VITE_API_URL=http://192.168.1.136:3111
 
 ## Related
 
-- [`lode-api-rust`](../lode-api-rust) — Axum/SQLite REST API + SSE broadcaster
-- [`lode-stm32h723`](../lode-stm32h723) — Embassy firmware for Nucleo-H723ZG, posts readings every 500ms
+- [lode-api-rust](https://github.com/maximka76667/lode-api-rust) — Axum/SQLite REST API + SSE broadcaster
+- [lode-stm32h723](https://github.com/maximka76667/lode-stm32h723) — Embassy firmware for Nucleo-H723ZG, posts readings every 500ms
