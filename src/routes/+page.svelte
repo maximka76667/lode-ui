@@ -6,6 +6,7 @@
 	// Live state
 	let latest = $state<SensorReading | null>(null);
 	let connected = $state(false);
+	let connecting = $state(true);
 	let lastUpdate = $state('');
 	let lastReadingAt = $state(0);
 	let now = $state(Date.now());
@@ -29,11 +30,13 @@
 			(r) => {
 				latest = r;
 				connected = true;
+				connecting = false;
 				lastReadingAt = Date.now();
 				lastUpdate = new Date().toLocaleTimeString();
 			},
 			() => {
 				connected = false;
+				connecting = false;
 			}
 		);
 	});
@@ -76,7 +79,9 @@
 	<header>
 		<h1>Lode</h1>
 		<span class="status" class:connected class:stale>
-			{#if stale}
+			{#if connecting}
+				&nbsp;
+			{:else if stale}
 				◌ No signal
 			{:else if connected}
 				● Live
