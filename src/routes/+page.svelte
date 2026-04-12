@@ -80,7 +80,7 @@
 		<h1>Lode</h1>
 		<span class="status" class:connected class:stale>
 			{#if connecting}
-				&nbsp;
+				◎ Connecting
 			{:else if stale}
 				◌ No signal
 			{:else if connected}
