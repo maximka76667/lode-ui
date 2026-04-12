@@ -11,11 +11,11 @@
 	let now = $state(Date.now());
 
 	$effect(() => {
-		const id = setInterval(() => (now = Date.now()), 2000);
+		const id = setInterval(() => (now = Date.now()), 10_000);
 		return () => clearInterval(id);
 	});
 
-	let stale = $derived(connected && lastReadingAt > 0 && now - lastReadingAt > 5000);
+	let stale = $derived(connected && lastReadingAt > 0 && now - lastReadingAt > 120_000);
 
 	// History state
 	let range = $state<'24h' | '7d'>('24h');
