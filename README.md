@@ -2,6 +2,8 @@
 
 Dashboard for the Lode environmental sensor system. Displays live temperature, humidity, and pressure readings from a BME280 sensor running on an STM32H723 over Ethernet, via the [lode-api-rust](https://github.com/maximka76667/lode-api-rust) backend.
 
+<img width="1119" height="1037" alt="lode-ui" src="https://github.com/user-attachments/assets/a3b5a7c4-e767-4709-913f-87c393cd98da" />
+
 ## Stack
 
 - [SvelteKit](https://kit.svelte.dev/) + Svelte 5 (runes)
