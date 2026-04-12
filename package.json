@@ -30,5 +30,8 @@
 	},
 	"engines": {
 		"node": ">=22.12"
+	},
+	"overrides": {
+		"estree-walker": "^3.0.3"
 	}
 }
