@@ -22,7 +22,7 @@ bun dev
 `.env`:
 
 ```
-VITE_API_URL=http://192.168.1.136:3111
+VITE_API_URL=https://lode-api-rust.onrender.com
 ```
 
 ## Features
