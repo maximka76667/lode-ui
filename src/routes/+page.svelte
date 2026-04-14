@@ -19,7 +19,7 @@
 	let stale = $derived(connected && lastReadingAt > 0 && now - lastReadingAt > 120_000);
 
 	// History state
-	let range = $state<'24h' | '7d'>('24h');
+	let range = $state<'5m' | '20m' | '1h' | '5h'>('1h');
 	let history = $state<SensorReading[]>([]);
 	let loading = $state(false);
 	let histError = $state<string | null>(null);
@@ -30,12 +30,14 @@
 			(r) => {
 				latest = r;
 				connected = true;
-				connecting = false;
 				lastReadingAt = Date.now();
 				lastUpdate = new Date().toLocaleTimeString();
 			},
 			() => {
 				connected = false;
+				connecting = false;
+			},
+			() => {
 				connecting = false;
 			}
 		);
@@ -85,6 +87,8 @@
 				◌ No signal
 			{:else if connected}
 				● Live
+			{:else if lastReadingAt === 0}
+				◎ Waiting for data
 			{:else}
 				○ Offline
 			{/if}
@@ -111,7 +115,7 @@
 		<div class="history-header">
 			<h2>History</h2>
 			<div class="ranges">
-				{#each ['24h', '7d'] as r}
+				{#each ['5m', '20m', '1h', '5h'] as r}
 					<button class:active={range === r} onclick={() => (range = r as typeof range)}>{r}</button>
 				{/each}
 			</div>

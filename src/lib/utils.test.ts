@@ -19,23 +19,33 @@ describe('fromISO', () => {
 	afterEach(() => vi.useRealTimers());
 
 	it('returns a valid ISO string', () => {
-		expect(() => new Date(fromISO('24h'))).not.toThrow();
-		expect(fromISO('24h')).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+		expect(() => new Date(fromISO('1h'))).not.toThrow();
+		expect(fromISO('1h')).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 	});
 
-	it('24h → exactly 24 hours before now', () => {
-		const result = new Date(fromISO('24h')).getTime();
-		expect(result).toBe(FIXED_NOW - 24 * 3_600_000);
+	it('5m → exactly 5 minutes before now', () => {
+		const result = new Date(fromISO('5m')).getTime();
+		expect(result).toBe(FIXED_NOW - 5 * 60_000);
 	});
 
-	it('7d → exactly 168 hours before now', () => {
-		const result = new Date(fromISO('7d')).getTime();
-		expect(result).toBe(FIXED_NOW - 168 * 3_600_000);
+	it('20m → exactly 20 minutes before now', () => {
+		const result = new Date(fromISO('20m')).getTime();
+		expect(result).toBe(FIXED_NOW - 20 * 60_000);
 	});
 
-	it('unknown range falls back to 24h', () => {
+	it('1h → exactly 1 hour before now', () => {
+		const result = new Date(fromISO('1h')).getTime();
+		expect(result).toBe(FIXED_NOW - 60 * 60_000);
+	});
+
+	it('5h → exactly 5 hours before now', () => {
+		const result = new Date(fromISO('5h')).getTime();
+		expect(result).toBe(FIXED_NOW - 5 * 60 * 60_000);
+	});
+
+	it('unknown range falls back to 1h', () => {
 		const result = new Date(fromISO('banana')).getTime();
-		expect(result).toBe(FIXED_NOW - 24 * 3_600_000);
+		expect(result).toBe(FIXED_NOW - 60 * 60_000);
 	});
 });
 
@@ -62,22 +72,30 @@ describe('fmtVal', () => {
 // ── fmtLabel ─────────────────────────────────────────────────────────────────
 
 describe('fmtLabel', () => {
-	const ts = '2026-04-11T14:30:00.000Z';
+	const ts = '2026-04-11T14:30:45.000Z';
 
-	it('24h range returns a time string (HH:MM)', () => {
-		const label = fmtLabel(ts, '24h');
+	it('1h range returns HH:MM format', () => {
+		const label = fmtLabel(ts, '1h');
 		expect(label).toMatch(/^\d{1,2}:\d{2}/);
-		// should not contain a date part like "Apr 11"
 		expect(label).not.toMatch(/[A-Z][a-z]{2}\s\d/);
 	});
 
-	it('7d range includes a month+day prefix', () => {
-		const label = fmtLabel(ts, '7d');
-		// e.g. "Apr 11 14:30" — has a letter-then-space-then-digit pattern
-		expect(label).toMatch(/[A-Z][a-z]{2}\s\d/);
+	it('5h range returns HH:MM format', () => {
+		const label = fmtLabel(ts, '5h');
+		expect(label).toMatch(/^\d{1,2}:\d{2}/);
 	});
 
-	it('7d and 24h produce different formats for the same timestamp', () => {
-		expect(fmtLabel(ts, '7d')).not.toBe(fmtLabel(ts, '24h'));
+	it('5m range returns HH:MM:SS format', () => {
+		const label = fmtLabel(ts, '5m');
+		expect(label).toMatch(/^\d{1,2}:\d{2}:\d{2}/);
+	});
+
+	it('20m range returns HH:MM:SS format', () => {
+		const label = fmtLabel(ts, '20m');
+		expect(label).toMatch(/^\d{1,2}:\d{2}:\d{2}/);
+	});
+
+	it('5m and 1h produce different formats for the same timestamp', () => {
+		expect(fmtLabel(ts, '5m').length).toBeGreaterThan(fmtLabel(ts, '1h').length);
 	});
 });

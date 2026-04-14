@@ -1,10 +1,15 @@
 import type { SensorReading } from './api';
 
-const RANGE_HOURS: Record<string, number> = { '1h': 1, '6h': 6, '24h': 24, '7d': 168 };
+const RANGE_MS: Record<string, number> = {
+	'5m': 5 * 60_000,
+	'20m': 20 * 60_000,
+	'1h': 60 * 60_000,
+	'5h': 5 * 60 * 60_000
+};
 
 export function fromISO(range: string): string {
-	const hours = RANGE_HOURS[range] ?? 24;
-	return new Date(Date.now() - hours * 3_600_000).toISOString();
+	const ms = RANGE_MS[range] ?? 60 * 60_000;
+	return new Date(Date.now() - ms).toISOString();
 }
 
 export function fmtVal(r: SensorReading | null, key: keyof SensorReading, dec = 1): string {
@@ -15,12 +20,8 @@ export function fmtVal(r: SensorReading | null, key: keyof SensorReading, dec = 
 
 export function fmtLabel(t: string, range: string): string {
 	const d = new Date(t);
-	if (range === '7d') {
-		return (
-			d.toLocaleDateString([], { month: 'short', day: 'numeric' }) +
-			' ' +
-			d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-		);
+	if (range === '5m' || range === '20m') {
+		return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 	}
 	return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }

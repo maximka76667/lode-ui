@@ -24,13 +24,15 @@ export async function fetchReadings(params?: {
 
 export function connectSSE(
 	onReading: (r: SensorReading) => void,
-	onDisconnect: () => void
+	onDisconnect: () => void,
+	onOpen?: () => void
 ): () => void {
 	let es: EventSource;
 	let closed = false;
 
 	function connect() {
 		es = new EventSource(`${API_URL}/sse`);
+		es.onopen = () => onOpen?.();
 		es.onmessage = (e) => {
 			try {
 				onReading(JSON.parse(e.data) as SensorReading);
