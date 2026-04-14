@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { connectSSE, fetchReadings, type SensorReading } from '$lib/api';
+	import { connectSSE, fetchLatestReading, fetchReadings, type SensorReading } from '$lib/api';
 	import { fromISO, fmtVal, fmtLabel } from '$lib/utils';
 	import MetricChart from '$lib/components/MetricChart.svelte';
 
@@ -23,6 +23,13 @@
 	let history = $state<SensorReading[]>([]);
 	let loading = $state(false);
 	let histError = $state<string | null>(null);
+
+	// Seed cards with latest reading on startup
+	$effect(() => {
+		fetchLatestReading().then((r) => {
+			if (r && !latest) latest = r;
+		});
+	});
 
 	// SSE — auto-reconnects every 3s on error
 	$effect(() => {
@@ -98,15 +105,15 @@
 
 	<section class="cards">
 		<div class="card temp">
-			<span class="label">Temperature</span>
+			<span class="label"><span class="latest">Latest</span> Temperature</span>
 			<span class="value">{fmtVal(latest, 'temperature_c')}<small>°C</small></span>
 		</div>
 		<div class="card humid">
-			<span class="label">Humidity</span>
+			<span class="label"><span class="latest">Latest</span> Humidity</span>
 			<span class="value">{fmtVal(latest, 'humidity_pct')}<small>%</small></span>
 		</div>
 		<div class="card pres">
-			<span class="label">Pressure</span>
+			<span class="label"><span class="latest">Latest</span> Pressure</span>
 			<span class="value">{fmtVal(latest, 'pressure_hpa', 1)}<small>hPa</small></span>
 		</div>
 	</section>
@@ -149,12 +156,19 @@
 	}
 
 	main {
-		max-width: 900px;
+		max-width: 1400px;
 		margin: 0 auto;
 		padding: 2rem 1.25rem;
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
+	}
+
+	@media (min-width: 1024px) {
+		main {
+			padding: 3rem 3rem;
+			gap: 3rem;
+		}
 	}
 
 	/* Header */
@@ -171,10 +185,18 @@
 		color: #f8fafc;
 	}
 
+	@media (min-width: 1024px) {
+		h1 { font-size: 2rem; }
+	}
+
 	.status {
 		font-size: 0.8rem;
 		color: #4b5563;
 		transition: color 0.3s;
+	}
+
+	@media (min-width: 1024px) {
+		.status { font-size: 0.95rem; }
 	}
 
 	.status.connected {
@@ -190,6 +212,10 @@
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 1rem;
+	}
+
+	@media (min-width: 1024px) {
+		.cards { gap: 1.5rem; }
 	}
 
 	@media (max-width: 500px) {
@@ -208,12 +234,24 @@
 		gap: 0.5rem;
 	}
 
+	@media (min-width: 1024px) {
+		.card {
+			border-radius: 14px;
+			padding: 2rem 2.25rem;
+			gap: 0.75rem;
+		}
+	}
+
 	.card .label {
 		font-size: 0.7rem;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		color: #6b7280;
+	}
+
+	@media (min-width: 1024px) {
+		.card .label { font-size: 0.85rem; }
 	}
 
 	.card .value {
@@ -224,6 +262,10 @@
 		letter-spacing: -0.03em;
 	}
 
+	@media (min-width: 1024px) {
+		.card .value { font-size: 3.5rem; }
+	}
+
 	.card .value small {
 		font-size: 0.9rem;
 		font-weight: 400;
@@ -231,9 +273,17 @@
 		color: #6b7280;
 	}
 
+	@media (min-width: 1024px) {
+		.card .value small { font-size: 1.25rem; }
+	}
+
 	.card.temp .value { color: #f97316; }
 	.card.humid .value { color: #06b6d4; }
 	.card.pres .value { color: #a855f7; }
+
+	.card.temp .latest { color: #f97316; }
+	.card.humid .latest { color: #06b6d4; }
+	.card.pres .latest { color: #a855f7; }
 
 	/* History */
 	.history {
@@ -254,6 +304,10 @@
 		color: #9ca3af;
 	}
 
+	@media (min-width: 1024px) {
+		h2 { font-size: 1.1rem; }
+	}
+
 	.ranges {
 		display: flex;
 		gap: 0.25rem;
@@ -271,6 +325,13 @@
 			background 0.15s,
 			color 0.15s,
 			border-color 0.15s;
+	}
+
+	@media (min-width: 1024px) {
+		.ranges button {
+			font-size: 0.875rem;
+			padding: 0.35rem 0.9rem;
+		}
 	}
 
 	.ranges button:hover {

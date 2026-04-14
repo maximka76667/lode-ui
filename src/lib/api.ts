@@ -8,6 +8,13 @@ export interface SensorReading {
 	recorded_at: string;
 }
 
+export async function fetchLatestReading(): Promise<SensorReading | null> {
+	const res = await fetch(`${API_URL}/readings/latest`);
+	if (res.status === 404) return null;
+	if (!res.ok) throw new Error(`API ${res.status}: ${res.statusText}`);
+	return res.json();
+}
+
 export async function fetchReadings(params?: {
 	from?: string;
 	to?: string;
