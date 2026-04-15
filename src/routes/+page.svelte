@@ -54,7 +54,7 @@
 		loading = true;
 		histError = null;
 		try {
-			const data = await fetchReadings({ from: fromISO(r), limit: 1000 });
+			const data = await fetchReadings({ from: fromISO(r) });
 			history = data.toReversed();
 		} catch (e) {
 			histError = e instanceof Error ? e.message : String(e);

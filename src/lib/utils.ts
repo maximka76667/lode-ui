@@ -9,7 +9,7 @@ const RANGE_MS: Record<string, number> = {
 
 export function fromISO(range: string): string {
 	const ms = RANGE_MS[range] ?? 60 * 60_000;
-	return new Date(Date.now() - ms).toISOString();
+	return new Date(Date.now() - ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
 }
 
 export function fmtVal(r: SensorReading | null, key: keyof SensorReading, dec = 1): string {
