@@ -6,13 +6,15 @@
 		unit,
 		color,
 		labels,
-		values
+		values,
+		note
 	}: {
 		label: string;
 		unit: string;
 		color: string;
 		labels: string[];
-		values: number[];
+		values: (number | null)[];
+		note?: string;
 	} = $props();
 
 	let canvas: HTMLCanvasElement | undefined = $state();
@@ -38,6 +40,7 @@
 						backgroundColor: color + '18',
 						fill: true,
 						tension: 0.3,
+						spanGaps: false,
 						pointRadius: vs.length > 300 ? 0 : 2,
 						pointHoverRadius: 4,
 						borderWidth: 1.5
@@ -56,6 +59,7 @@
 						border: { color: '#374151' }
 					},
 					y: {
+						position: 'right',
 						ticks: {
 							color: '#6b7280',
 							callback: (v) => `${Number(v).toFixed(1)}`
@@ -96,6 +100,9 @@
 			<canvas bind:this={canvas}></canvas>
 		{/if}
 	</div>
+	{#if note}
+		<div class="note">{note}</div>
+	{/if}
 </div>
 
 <style>
@@ -124,6 +131,12 @@
 	canvas {
 		width: 100% !important;
 		height: 100% !important;
+	}
+
+	.note {
+		font-size: 0.9rem;
+		color: #4b5563;
+		text-align: right;
 	}
 
 	.empty {

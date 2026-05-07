@@ -78,6 +78,21 @@
 	let tempValues = $derived(history.map((r) => r.temperature_c));
 	let humidValues = $derived(history.map((r) => r.humidity_pct));
 	let pressValues = $derived(history.map((r) => r.pressure_hpa));
+	let presenceValues = $derived(history.map((r) => r.presence_status));
+	let movementDistValues = $derived(history.map((r) => r.movement_distance_cm));
+	let movementEnergyValues = $derived(history.map((r) => r.movement_energy));
+	let stationaryDistValues = $derived(history.map((r) => r.stationary_distance_cm));
+	let stationaryEnergyValues = $derived(history.map((r) => r.stationary_energy));
+	let detectionDistValues = $derived(history.map((r) => r.detection_distance_cm));
+
+	const PRESENCE_LABELS: Record<number, string> = { 0: 'None', 1: 'Moving', 2: 'Still', 3: 'Both' };
+	let presenceLabel = $derived(
+		latest?.presence_status != null ? (PRESENCE_LABELS[latest.presence_status] ?? '—') : '—'
+	);
+	let presenceColor = $derived(latest?.presence_status === 2 ? '#f8fafc' : '#22c55e');
+	let detectionDist = $derived(
+		latest?.detection_distance_cm != null ? `${latest.detection_distance_cm} cm` : ''
+	);
 </script>
 
 <svelte:head>
@@ -118,6 +133,33 @@
 		</div>
 	</section>
 
+	<section class="cards presence-cards">
+		<div class="card presence">
+			<span class="label"><span class="latest">Latest</span> Presence</span>
+			<span class="value presence-status" style="color: {presenceColor}">{presenceLabel}</span>
+		</div>
+		<div class="card presence">
+			<span class="label"><span class="latest">Latest</span> Detection Distance</span>
+			<span class="value">{latest?.detection_distance_cm ?? '—'}<small>cm</small></span>
+		</div>
+		<div class="card presence">
+			<span class="label"><span class="latest">Latest</span> Movement Distance</span>
+			<span class="value">{latest?.movement_distance_cm ?? '—'}<small>cm</small></span>
+		</div>
+		<div class="card presence">
+			<span class="label"><span class="latest">Latest</span> Movement Energy</span>
+			<span class="value">{latest?.movement_energy ?? '—'}</span>
+		</div>
+		<div class="card still">
+			<span class="label"><span class="latest">Latest</span> Stationary Distance</span>
+			<span class="value">{latest?.stationary_distance_cm ?? '—'}<small>cm</small></span>
+		</div>
+		<div class="card still">
+			<span class="label"><span class="latest">Latest</span> Stationary Energy</span>
+			<span class="value">{latest?.stationary_energy ?? '—'}</span>
+		</div>
+	</section>
+
 	<section class="history">
 		<div class="history-header">
 			<h2>History</h2>
@@ -136,6 +178,12 @@
 				<MetricChart label="Temperature" unit="°C" color="#f97316" labels={chartLabels} values={tempValues} />
 				<MetricChart label="Humidity" unit="%" color="#06b6d4" labels={chartLabels} values={humidValues} />
 				<MetricChart label="Pressure" unit="hPa" color="#a855f7" labels={chartLabels} values={pressValues} />
+				<MetricChart label="Presence Status" unit="" color="#22c55e" labels={chartLabels} values={presenceValues} note="0 = None · 1 = Moving · 2 = Still · 3 = Both" />
+				<MetricChart label="Detection Distance" unit="cm" color="#22c55e" labels={chartLabels} values={detectionDistValues} />
+				<MetricChart label="Movement Distance" unit="cm" color="#4ade80" labels={chartLabels} values={movementDistValues} />
+				<MetricChart label="Movement Energy" unit="" color="#86efac" labels={chartLabels} values={movementEnergyValues} />
+				<MetricChart label="Stationary Distance" unit="cm" color="#f8fafc" labels={chartLabels} values={stationaryDistValues} />
+				<MetricChart label="Stationary Energy" unit="" color="#f8fafc" labels={chartLabels} values={stationaryEnergyValues} />
 			</div>
 		{/if}
 	</section>
@@ -156,7 +204,7 @@
 	}
 
 	main {
-		max-width: 1400px;
+		max-width: 1800px;
 		margin: 0 auto;
 		padding: 2rem 1.25rem;
 		display: flex;
@@ -214,8 +262,13 @@
 		gap: 1rem;
 	}
 
+	.presence-cards {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
 	@media (min-width: 1024px) {
 		.cards { gap: 1.5rem; }
+		.presence-cards { grid-template-columns: repeat(6, 1fr); }
 	}
 
 	@media (max-width: 500px) {
@@ -284,6 +337,12 @@
 	.card.temp .latest { color: #f97316; }
 	.card.humid .latest { color: #06b6d4; }
 	.card.pres .latest { color: #a855f7; }
+	.card.presence .value { color: #22c55e; }
+	.card.presence .latest { color: #22c55e; }
+	.card.presence { justify-content: space-between; }
+	.presence-status { margin-top: auto; }
+	.card.still .value { color: #f8fafc; }
+	.card.still .latest { color: #f8fafc; }
 
 	/* History */
 	.history {

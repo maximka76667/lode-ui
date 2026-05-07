@@ -6,6 +6,12 @@ export interface SensorReading {
 	humidity_pct: number;
 	pressure_hpa: number;
 	recorded_at: string;
+	presence_status: number | null;
+	movement_distance_cm: number | null;
+	movement_energy: number | null;
+	stationary_distance_cm: number | null;
+	stationary_energy: number | null;
+	detection_distance_cm: number | null;
 }
 
 export async function fetchLatestReading(): Promise<SensorReading | null> {
