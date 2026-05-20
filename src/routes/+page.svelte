@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { connectSSE, fetchLatestReading, fetchReadings, type SensorReading } from '$lib/api';
-	import { fromISO, fmtVal, fmtLabel } from '$lib/utils';
+	import { fromISO, fmtVal, fmtLabel, downsample } from '$lib/utils';
 	import MetricChart from '$lib/components/MetricChart.svelte';
 
 	// Live state
@@ -74,16 +74,17 @@
 		return () => clearInterval(id);
 	});
 
-	let chartLabels = $derived(history.map((r) => fmtLabel(r.recorded_at, range)));
-	let tempValues = $derived(history.map((r) => r.temperature_c));
-	let humidValues = $derived(history.map((r) => r.humidity_pct));
-	let pressValues = $derived(history.map((r) => r.pressure_hpa));
-	let presenceValues = $derived(history.map((r) => r.presence_status));
-	let movementDistValues = $derived(history.map((r) => r.movement_distance_cm));
-	let movementEnergyValues = $derived(history.map((r) => r.movement_energy));
-	let stationaryDistValues = $derived(history.map((r) => r.stationary_distance_cm));
-	let stationaryEnergyValues = $derived(history.map((r) => r.stationary_energy));
-	let detectionDistValues = $derived(history.map((r) => r.detection_distance_cm));
+	let sampledHistory = $derived(downsample(history));
+	let chartLabels = $derived(sampledHistory.map((r) => fmtLabel(r.recorded_at, range)));
+	let tempValues = $derived(sampledHistory.map((r) => r.temperature_c));
+	let humidValues = $derived(sampledHistory.map((r) => r.humidity_pct));
+	let pressValues = $derived(sampledHistory.map((r) => r.pressure_hpa));
+	let presenceValues = $derived(sampledHistory.map((r) => r.presence_status));
+	let movementDistValues = $derived(sampledHistory.map((r) => r.movement_distance_cm));
+	let movementEnergyValues = $derived(sampledHistory.map((r) => r.movement_energy));
+	let stationaryDistValues = $derived(sampledHistory.map((r) => r.stationary_distance_cm));
+	let stationaryEnergyValues = $derived(sampledHistory.map((r) => r.stationary_energy));
+	let detectionDistValues = $derived(sampledHistory.map((r) => r.detection_distance_cm));
 
 	const PRESENCE_LABELS: Record<number, string> = { 0: 'None', 1: 'Moving', 2: 'Still', 3: 'Both' };
 	let presenceLabel = $derived(

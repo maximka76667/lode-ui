@@ -22,6 +22,12 @@ export function fmtVal(r: SensorReading | null, key: keyof SensorReading, dec = 
 	return typeof v === 'number' ? v.toFixed(dec) : '—';
 }
 
+export function downsample<T>(arr: T[], maxPoints = 300): T[] {
+	if (arr.length <= maxPoints) return arr;
+	const step = arr.length / maxPoints;
+	return Array.from({ length: maxPoints }, (_, i) => arr[Math.round(i * step)]);
+}
+
 export function fmtLabel(t: string, range: string): string {
 	const d = new Date(t);
 	if (range === '5m' || range === '20m') {
